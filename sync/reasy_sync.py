@@ -138,6 +138,35 @@ def semaforo(dias) -> str:
     return "con_tiempo"
 
 
+def calcular_score(tipo: str, monto, dias, es_renovable: bool) -> int:
+    """Score 0-100 que indica qué tan atractiva es la oportunidad para REASY."""
+    score = 0
+
+    # Tipo / tamaño del contrato (0-35 pts)
+    tipo_pts = {"L1": 5, "LE": 15, "LP": 25, "LQ": 30, "LR": 35}
+    score += tipo_pts.get(tipo, 0)
+
+    # Monto estimado en CLP (0-30 pts)
+    m = monto or 0
+    if m >= 50_000_000:   score += 30
+    elif m >= 10_000_000: score += 20
+    elif m >= 2_000_000:  score += 10
+    elif m > 0:           score += 5
+
+    # Días restantes — ventana ideal 7-40 días (0-25 pts)
+    if dias is not None and dias >= 0:
+        if 7 <= dias <= 20:    score += 25
+        elif 20 < dias <= 40:  score += 15
+        elif 3 <= dias < 7:    score += 10
+        elif dias > 40:        score += 5
+
+    # Contrato renovable — valor adicional (0-10 pts)
+    if es_renovable:
+        score += 10
+
+    return min(score, 100)
+
+
 def procesar(raw_list: list) -> list:
     resultado = []
     hoy = datetime.date.today()
@@ -201,6 +230,12 @@ def procesar(raw_list: list) -> list:
             "comuna_unidad":        comprador.get("ComunaUnidad", ""),
             "url_acta":             adj.get("UrlActa", ""),
             "url":                  f"https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?qs={codigo}",
+            "score":                calcular_score(
+                                        lic.get("Tipo", ""),
+                                        monto,
+                                        dias,
+                                        bool(lic.get("EsRenovable", False))
+                                    ),
             "updated_at":           datetime.datetime.utcnow().isoformat(),
         })
 

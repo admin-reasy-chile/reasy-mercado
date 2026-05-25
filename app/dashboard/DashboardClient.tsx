@@ -173,6 +173,16 @@ export function DashboardClient({ userName }: Props) {
           </span>
 
           <button
+            onClick={() => router.push('/dashboard/analytics')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Analytics
+          </button>
+
+          <button
             onClick={handleSync}
             disabled={syncing}
             className="btn-sync flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white"
@@ -342,7 +352,7 @@ export function DashboardClient({ userName }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[oklch(0.91_0.008_240)] bg-[oklch(0.97_0.005_240)]">
-                    {['Estado', 'Organismo', 'Región', 'Licitación', 'Cierre', 'Monto', 'CRM'].map(h => (
+                    {['Score', 'Estado', 'Organismo', 'Región', 'Licitación', 'Cierre', 'Monto', 'CRM'].map(h => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[oklch(0.50_0.008_240)] whitespace-nowrap">
                         {h}
                       </th>
@@ -356,6 +366,17 @@ export function DashboardClient({ userName }: Props) {
                       className={`licitacion-row ${lic.semaforo === 'urgente' ? 'bg-red-50/50' : ''}`}
                       onClick={() => setSelected(lic)}
                     >
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {lic.score != null ? (
+                          <span className={`text-xs font-bold tabular-nums ${
+                            lic.score >= 70 ? 'text-emerald-600' :
+                            lic.score >= 40 ? 'text-amber-600' :
+                            'text-[oklch(0.60_0.008_240)]'
+                          }`}>
+                            {lic.score}
+                          </span>
+                        ) : <span className="text-xs text-[oklch(0.75_0.008_240)]">—</span>}
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <SemaforoTag estado={lic.semaforo} diasRestantes={lic.dias_restantes} size="sm" />
                       </td>

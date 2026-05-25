@@ -28,6 +28,7 @@ export interface Licitacion {
   direccion_unidad: string | null
   comuna_unidad: string | null
   url_acta: string | null
+  score: number | null
   created_at: string
   updated_at: string
   seguimiento?: Seguimiento | null
