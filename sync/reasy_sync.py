@@ -35,8 +35,8 @@ DIAS_ATRAS = 90
 
 ESTADOS_BUSQUEDA = ["publicada", "cerrada", "adjudicada"]
 
-# Keywords REAS para filtro local
-PALABRAS_CLAVE = [
+# Keywords de respaldo si Supabase no responde
+PALABRAS_CLAVE_BACKUP = [
     "residuos hospitalarios", "residuos peligrosos", "reas",
     "manejo de residuos", "gestión de residuos", "gestion de residuos",
     "residuos biomedicos", "residuos biomédicos",
@@ -51,6 +51,25 @@ PALABRAS_CLAVE = [
 # ─────────────────────────────────────────────
 #  API MERCADO PÚBLICO
 # ─────────────────────────────────────────────
+
+def obtener_keywords() -> list:
+    """Lee las palabras clave activas desde Supabase. Usa backup si falla."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return PALABRAS_CLAVE_BACKUP
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/keywords?activa=eq.true&select=palabra"
+        headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        palabras = [r["palabra"] for r in resp.json()]
+        if palabras:
+            print(f"✓ {len(palabras)} keywords cargadas desde Supabase")
+            return palabras
+    except Exception as e:
+        print(f"⚠ Error leyendo keywords de Supabase: {e}")
+    print("→ Usando keywords de respaldo")
+    return PALABRAS_CLAVE_BACKUP
+
 
 def buscar_por_fecha(ticket: str, fecha: datetime.date, estado: str) -> list:
     """Obtiene todas las licitaciones publicadas en una fecha y estado dado."""
@@ -72,13 +91,13 @@ def buscar_por_fecha(ticket: str, fecha: datetime.date, estado: str) -> list:
         return []
 
 
-def es_reas(licitacion: dict) -> str | None:
+def es_reas(licitacion: dict, palabras_clave: list) -> str | None:
     """Retorna la keyword que coincide si la licitación es REAS, None si no."""
     texto = " ".join([
         licitacion.get("Nombre", ""),
         licitacion.get("Descripcion", ""),
     ]).lower()
-    for kw in PALABRAS_CLAVE:
+    for kw in palabras_clave:
         if kw in texto:
             return kw
     return None
@@ -86,6 +105,7 @@ def es_reas(licitacion: dict) -> str | None:
 
 def buscar_todas(ticket: str) -> list:
     """Busca en los últimos DIAS_ATRAS días y filtra licitaciones REAS."""
+    palabras_clave = obtener_keywords()
     encontradas = {}
     hoy = datetime.date.today()
 
@@ -101,7 +121,7 @@ def buscar_todas(ticket: str) -> list:
                 codigo = lic.get("CodigoExterno", "")
                 if not codigo or codigo in encontradas:
                     continue
-                keyword = es_reas(lic)
+                keyword = es_reas(lic, palabras_clave)
                 if keyword:
                     lic["_Estado"] = estado
                     lic["_KeywordMatch"] = keyword
