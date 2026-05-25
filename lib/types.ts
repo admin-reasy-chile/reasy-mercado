@@ -17,8 +17,17 @@ export interface Licitacion {
   dias_restantes: number | null
   semaforo: SemaforoEstado
   monto_estimado: number | null
+  moneda: string | null
   url: string
   descripcion: string
+  duracion_contrato: string | null
+  es_renovable: boolean | null
+  responsable_nombre: string | null
+  responsable_email: string | null
+  responsable_fono: string | null
+  direccion_unidad: string | null
+  comuna_unidad: string | null
+  url_acta: string | null
   created_at: string
   updated_at: string
   seguimiento?: Seguimiento | null

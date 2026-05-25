@@ -168,23 +168,40 @@ def procesar(raw_list: list) -> list:
 
         codigo = lic.get("CodigoExterno", "")
 
+        # Duración contrato
+        duracion_val  = lic.get("TiempoDuracionContrato")
+        duracion_tipo = lic.get("TipoDuracionContrato", "")
+        duracion = f"{duracion_val} {duracion_tipo}".strip() if duracion_val else None
+
+        # Adjudicación
+        adj = lic.get("Adjudicacion", {}) or {}
+
         resultado.append({
-            "codigo":          codigo,
-            "nombre":          lic.get("Nombre", ""),
-            "organismo":       organismo,
-            "region":          region,
-            "tipo":            lic.get("Tipo", ""),
-            "estado":          lic.get("_Estado", lic.get("CodigoEstado", "")),
-            "keyword_match":   lic.get("_KeywordMatch", ""),
-            "fecha_pub":       fecha_pub.isoformat() if fecha_pub else None,
-            "fecha_cierre":    fecha_cierre.isoformat() if fecha_cierre else None,
-            "fecha_adj":       fecha_adj.isoformat() if fecha_adj else None,
-            "dias_restantes":  dias,
-            "semaforo":        semaforo(dias),
-            "monto_estimado":  monto,
-            "descripcion":     lic.get("Descripcion", ""),
-            "url":             f"https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?qs={codigo}",
-            "updated_at":      datetime.datetime.utcnow().isoformat(),
+            "codigo":               codigo,
+            "nombre":               lic.get("Nombre", ""),
+            "organismo":            organismo,
+            "region":               region,
+            "tipo":                 lic.get("Tipo", ""),
+            "estado":               lic.get("_Estado", lic.get("CodigoEstado", "")),
+            "keyword_match":        lic.get("_KeywordMatch", ""),
+            "fecha_pub":            fecha_pub.isoformat() if fecha_pub else None,
+            "fecha_cierre":         fecha_cierre.isoformat() if fecha_cierre else None,
+            "fecha_adj":            fecha_adj.isoformat() if fecha_adj else None,
+            "dias_restantes":       dias,
+            "semaforo":             semaforo(dias),
+            "monto_estimado":       monto,
+            "moneda":               lic.get("Moneda", "CLP"),
+            "descripcion":          lic.get("Descripcion", ""),
+            "duracion_contrato":    duracion,
+            "es_renovable":         bool(lic.get("EsRenovable", False)),
+            "responsable_nombre":   lic.get("NombreResponsableContrato", "") or comprador.get("NombreUsuario", ""),
+            "responsable_email":    lic.get("EmailResponsableContrato", ""),
+            "responsable_fono":     lic.get("FonoResponsableContrato", ""),
+            "direccion_unidad":     comprador.get("DireccionUnidad", ""),
+            "comuna_unidad":        comprador.get("ComunaUnidad", ""),
+            "url_acta":             adj.get("UrlActa", ""),
+            "url":                  f"https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?qs={codigo}",
+            "updated_at":           datetime.datetime.utcnow().isoformat(),
         })
 
     return resultado
