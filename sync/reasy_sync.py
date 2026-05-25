@@ -305,7 +305,7 @@ def enviar_alerta_email(urgentes: list):
             "https://api.resend.com/emails",
             headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
             json={
-                "from": "REASY Alertas <alertas@reasy.cl>",
+                "from": "REASY Alertas <IA@reasy.cl>",
                 "to": USUARIOS_EMAIL,
                 "subject": f"🔴 {len(urgentes)} licitación{'es' if len(urgentes) > 1 else ''} URGENTE{'S' if len(urgentes) > 1 else ''} en Mercado Público",
                 "html": html,
