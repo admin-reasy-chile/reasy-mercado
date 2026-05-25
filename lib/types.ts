@@ -56,6 +56,8 @@ export interface DashboardStats {
   con_tiempo: number
   monto_total: number
   ultima_sync: string | null
+  nuevas_esta_semana: number
+  nuevas_semana_anterior: number
 }
 
 export const SEMAFORO_CONFIG: Record<SemaforoEstado, {

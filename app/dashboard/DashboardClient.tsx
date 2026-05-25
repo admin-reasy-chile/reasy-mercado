@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Licitacion, DashboardStats, SemaforoEstado, EstadoCRM, SEMAFORO_CONFIG } from '@/lib/types'
+import { Licitacion, DashboardStats, SemaforoEstado, EstadoCRM, SEMAFORO_CONFIG, CRM_CONFIG } from '@/lib/types'
 import { SemaforoTag } from '@/components/SemaforoTag'
 import { CRMBadge } from '@/components/CRMBadge'
 import { MontoTag } from '@/components/MontoTag'
@@ -42,6 +42,7 @@ export function DashboardClient({ userName }: Props) {
   const [filterSemaforo, setFilterSemaforo] = useState<SemaforoEstado | ''>('')
   const [filterRegion, setFilterRegion] = useState('')
   const [filterTipo, setFilterTipo] = useState('')
+  const [filterCRM, setFilterCRM] = useState<EstadoCRM | ''>('')
   const [search, setSearch] = useState('')
 
   const fetchData = useCallback(async () => {
@@ -50,6 +51,7 @@ export function DashboardClient({ userName }: Props) {
     if (filterSemaforo) params.set('semaforo', filterSemaforo)
     if (filterRegion)   params.set('region', filterRegion)
     if (filterTipo)     params.set('tipo', filterTipo)
+    if (filterCRM)      params.set('crm', filterCRM)
 
     const [licRes, statsRes] = await Promise.all([
       fetch(`/api/licitaciones?${params}`),
@@ -65,7 +67,7 @@ export function DashboardClient({ userName }: Props) {
     setLicitaciones(licData.data ?? [])
     setStats(statsData.data ?? null)
     setLoading(false)
-  }, [filterSemaforo, filterRegion, filterTipo, router])
+  }, [filterSemaforo, filterRegion, filterTipo, filterCRM, router])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -182,6 +184,32 @@ export function DashboardClient({ userName }: Props) {
           </div>
         )}
 
+        {/* Resumen semanal */}
+        {stats && (
+          <div className="flex items-center gap-3 mb-5 px-4 py-3 bg-white rounded-xl border border-[oklch(0.90_0.008_240)]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.14_240)]" />
+            <span className="text-xs font-medium text-[oklch(0.40_0.010_240)]">Esta semana</span>
+            <span className="text-sm font-semibold text-[oklch(0.22_0.08_240)]">
+              {stats.nuevas_esta_semana} nuevas licitaciones
+            </span>
+            <span className="text-xs text-[oklch(0.60_0.008_240)]">·</span>
+            {stats.nuevas_esta_semana === stats.nuevas_semana_anterior ? (
+              <span className="text-xs text-[oklch(0.55_0.008_240)]">igual que la semana anterior</span>
+            ) : stats.nuevas_esta_semana > stats.nuevas_semana_anterior ? (
+              <span className="text-xs text-emerald-600 font-medium">
+                ↑ {stats.nuevas_esta_semana - stats.nuevas_semana_anterior} más que la semana anterior
+              </span>
+            ) : (
+              <span className="text-xs text-[oklch(0.55_0.008_240)]">
+                ↓ {stats.nuevas_semana_anterior - stats.nuevas_esta_semana} menos que la semana anterior
+              </span>
+            )}
+            <span className="text-xs text-[oklch(0.70_0.008_240)] ml-auto">
+              sem. anterior: {stats.nuevas_semana_anterior}
+            </span>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <input
@@ -210,9 +238,20 @@ export function DashboardClient({ userName }: Props) {
             {['L1', 'LE', 'LP', 'LQ', 'LR'].map(t => <option key={t} value={t}>{t}</option>)}
           </select>
 
-          {(filterSemaforo || filterRegion || filterTipo || search) && (
+          <select
+            value={filterCRM}
+            onChange={e => setFilterCRM(e.target.value as EstadoCRM | '')}
+            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+          >
+            <option value="">Todos los estados CRM</option>
+            {(Object.entries(CRM_CONFIG) as [EstadoCRM, { label: string; color: string }][]).map(([key, cfg]) => (
+              <option key={key} value={key}>{cfg.label}</option>
+            ))}
+          </select>
+
+          {(filterSemaforo || filterRegion || filterTipo || filterCRM || search) && (
             <button
-              onClick={() => { setFilterSemaforo(''); setFilterRegion(''); setFilterTipo(''); setSearch('') }}
+              onClick={() => { setFilterSemaforo(''); setFilterRegion(''); setFilterTipo(''); setFilterCRM(''); setSearch('') }}
               className="px-3 py-1.5 text-xs text-[oklch(0.55_0.008_240)] hover:text-[oklch(0.30_0.010_240)] transition-colors"
             >
               Limpiar filtros

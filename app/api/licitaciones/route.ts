@@ -7,10 +7,11 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
-  const estado    = searchParams.get('estado') || 'publicada'
-  const semaforo  = searchParams.get('semaforo')
-  const region    = searchParams.get('region')
-  const tipo      = searchParams.get('tipo')
+  const estado   = searchParams.get('estado') || 'publicada'
+  const semaforo = searchParams.get('semaforo')
+  const region   = searchParams.get('region')
+  const tipo     = searchParams.get('tipo')
+  const crm      = searchParams.get('crm')
 
   const db = supabaseAdmin()
 
@@ -23,6 +24,18 @@ export async function GET(req: NextRequest) {
   if (semaforo) query = query.eq('semaforo', semaforo)
   if (region)   query = query.eq('region', region)
   if (tipo)     query = query.eq('tipo', tipo)
+
+  // Filtro por estado CRM: busca los codigos con ese estado en seguimiento
+  if (crm) {
+    const { data: segs } = await db
+      .from('seguimiento')
+      .select('licitacion_codigo')
+      .eq('estado_crm', crm)
+
+    const codigos = segs?.map(s => s.licitacion_codigo) ?? []
+    if (codigos.length === 0) return NextResponse.json({ data: [] })
+    query = query.in('codigo', codigos)
+  }
 
   const { data, error } = await query
 
