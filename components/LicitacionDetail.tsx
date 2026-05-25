@@ -56,9 +56,9 @@ function formatMonto(monto: number, moneda: string | null) {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   if (!value) return null
   return (
-    <div className="bg-[oklch(0.97_0.005_240)] rounded-lg px-3 py-2.5">
-      <p className="text-xs text-[oklch(0.60_0.008_240)] mb-0.5">{label}</p>
-      <div className="text-sm font-medium text-[oklch(0.22_0.010_240)]">{value}</div>
+    <div className="bg-[#EDF2F4] rounded-lg px-3 py-2.5">
+      <p className="text-xs text-[#6A8898] mb-0.5">{label}</p>
+      <div className="text-sm font-medium text-[#0A2233]">{value}</div>
     </div>
   )
 }
@@ -69,9 +69,9 @@ function LogLabel({ accion, valor }: { accion: string; valor: string | null }) {
     if (cfg) return <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${cfg.color}`}>{cfg.label}</span>
   }
   if (accion === 'notas') {
-    return <span className="text-xs text-[oklch(0.45_0.008_240)] italic">"{valor?.slice(0, 60)}{(valor?.length ?? 0) > 60 ? '…' : ''}"</span>
+    return <span className="text-xs text-[#3E5E6E] italic">"{valor?.slice(0, 60)}{(valor?.length ?? 0) > 60 ? '…' : ''}"</span>
   }
-  return <span className="text-xs text-[oklch(0.55_0.008_240)]">{valor ?? '—'}</span>
+  return <span className="text-xs text-[#5A7888]">{valor ?? '—'}</span>
 }
 
 export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) {
@@ -118,37 +118,37 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-[oklch(0.90_0.008_240)]">
+        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-[#D9E1E5]">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <SemaforoTag estado={semaforoRT} diasRestantes={diasRT} />
-              <span className="text-xs text-[oklch(0.60_0.008_240)] font-mono">{lic.codigo}</span>
-              <span className="text-xs text-[oklch(0.70_0.008_240)] bg-[oklch(0.94_0.008_240)] px-1.5 py-0.5 rounded">
+              <span className="text-xs text-[#6A8898] font-mono">{lic.codigo}</span>
+              <span className="text-xs text-[#7A9AAA] bg-[#EAF0F3] px-1.5 py-0.5 rounded">
                 {lic.tipo} — {TIPO_CONFIG[lic.tipo] ?? ''}
               </span>
             </div>
-            <h2 className="text-sm font-semibold text-[oklch(0.20_0.010_240)] leading-snug">
+            <h2 className="text-sm font-semibold text-[#051824] leading-snug">
               {lic.nombre}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-[oklch(0.55_0.008_240)] hover:bg-[oklch(0.93_0.008_240)] transition-colors"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-[#5A7888] hover:bg-[#E8EEF1] transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[oklch(0.90_0.008_240)] px-6">
+        <div className="flex border-b border-[#D9E1E5] px-6">
           {(['detalle', 'historial'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`py-2.5 mr-5 text-xs font-medium border-b-2 transition-colors capitalize
                 ${tab === t
-                  ? 'border-[oklch(0.48_0.14_240)] text-[oklch(0.30_0.10_240)]'
-                  : 'border-transparent text-[oklch(0.60_0.008_240)] hover:text-[oklch(0.35_0.010_240)]'
+                  ? 'border-[#55B1BF] text-[#0A2233]'
+                  : 'border-transparent text-[#6A8898] hover:text-[#1E3E50]'
                 }`}
             >
               {t === 'detalle' ? 'Detalle' : 'Historial'}
@@ -162,16 +162,16 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
           {tab === 'detalle' && (
             <div className="space-y-5">
               {/* Organismo */}
-              <div className="bg-[oklch(0.97_0.005_240)] rounded-lg px-3 py-2.5">
-                <p className="text-xs text-[oklch(0.60_0.008_240)] mb-0.5">Organismo comprador</p>
-                <p className="text-sm font-semibold text-[oklch(0.22_0.010_240)]">{lic.organismo}</p>
+              <div className="bg-[#EDF2F4] rounded-lg px-3 py-2.5">
+                <p className="text-xs text-[#6A8898] mb-0.5">Organismo comprador</p>
+                <p className="text-sm font-semibold text-[#0A2233]">{lic.organismo}</p>
                 {(lic.comuna_unidad || lic.region) && (
-                  <p className="text-xs text-[oklch(0.55_0.008_240)] mt-0.5">
+                  <p className="text-xs text-[#5A7888] mt-0.5">
                     {[lic.comuna_unidad, lic.region].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 {lic.direccion_unidad && (
-                  <p className="text-xs text-[oklch(0.65_0.008_240)] mt-0.5">{lic.direccion_unidad}</p>
+                  <p className="text-xs text-[#7A9AAA] mt-0.5">{lic.direccion_unidad}</p>
                 )}
               </div>
 
@@ -202,10 +202,10 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
               {/* Descripción */}
               {lic.descripcion && (
                 <div>
-                  <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide mb-2">
                     Descripción
                   </p>
-                  <p className="text-sm text-[oklch(0.35_0.010_240)] leading-relaxed">
+                  <p className="text-sm text-[#1E3E50] leading-relaxed">
                     {lic.descripcion}
                   </p>
                 </div>
@@ -214,22 +214,22 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
               {/* Responsable */}
               {(lic.responsable_nombre || lic.responsable_email || lic.responsable_fono) && (
                 <div>
-                  <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide mb-2">
                     Responsable de contrato
                   </p>
-                  <div className="bg-[oklch(0.97_0.005_240)] rounded-lg px-3 py-2.5 space-y-1">
+                  <div className="bg-[#EDF2F4] rounded-lg px-3 py-2.5 space-y-1">
                     {lic.responsable_nombre && (
-                      <p className="text-sm font-medium text-[oklch(0.22_0.010_240)]">{lic.responsable_nombre}</p>
+                      <p className="text-sm font-medium text-[#0A2233]">{lic.responsable_nombre}</p>
                     )}
                     {lic.responsable_email && (
                       <a href={`mailto:${lic.responsable_email}`}
-                        className="text-sm text-[oklch(0.48_0.14_240)] hover:underline block">
+                        className="text-sm text-[#55B1BF] hover:underline block">
                         {lic.responsable_email}
                       </a>
                     )}
                     {lic.responsable_fono && (
                       <a href={`tel:${lic.responsable_fono}`}
-                        className="text-sm text-[oklch(0.48_0.14_240)] hover:underline block">
+                        className="text-sm text-[#55B1BF] hover:underline block">
                         {lic.responsable_fono}
                       </a>
                     )}
@@ -240,24 +240,24 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
               {/* Links */}
               <div className="flex flex-col gap-2">
                 <a href={lic.url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-between px-4 py-3 rounded-lg border border-[oklch(0.85_0.010_240)] hover:border-[oklch(0.55_0.14_240)] hover:bg-[oklch(0.97_0.008_240)] transition-colors text-sm font-medium text-[oklch(0.48_0.14_240)]">
+                  className="flex items-center justify-between px-4 py-3 rounded-lg border border-[#BDC9CF] hover:border-[#55B1BF] hover:bg-[#EDF2F4] transition-colors text-sm font-medium text-[#55B1BF]">
                   Ver en Mercado Público
                   <span>→</span>
                 </a>
                 {lic.url_acta && (
                   <a href={lic.url_acta} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-3 rounded-lg border border-[oklch(0.85_0.010_240)] hover:border-[oklch(0.55_0.14_240)] hover:bg-[oklch(0.97_0.008_240)] transition-colors text-sm font-medium text-[oklch(0.48_0.14_240)]">
+                    className="flex items-center justify-between px-4 py-3 rounded-lg border border-[#BDC9CF] hover:border-[#55B1BF] hover:bg-[#EDF2F4] transition-colors text-sm font-medium text-[#55B1BF]">
                     Ver acta de adjudicación
                     <span>→</span>
                   </a>
                 )}
               </div>
 
-              <div className="border-t border-[oklch(0.91_0.008_240)]" />
+              <div className="border-t border-[#D9E1E5]" />
 
               {/* CRM */}
               <div>
-                <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-3">
+                <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide mb-3">
                   Seguimiento interno
                 </p>
                 <div className="grid grid-cols-3 gap-2 mb-4">
@@ -266,7 +266,7 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
                       className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-colors
                         ${estadoCRM === key
                           ? `${cfg.color} border-current`
-                          : 'border-[oklch(0.88_0.008_240)] text-[oklch(0.55_0.008_240)] hover:border-[oklch(0.75_0.008_240)]'
+                          : 'border-[#C8D5DA] text-[#5A7888] hover:border-[#9EB0BA]'
                         }`}>
                       {cfg.label}
                     </button>
@@ -275,7 +275,7 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
                 <textarea value={notas} onChange={e => setNotas(e.target.value)}
                   placeholder="Notas internas (visibles para el equipo)..."
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-[oklch(0.98_0.004_240)] text-sm text-[oklch(0.25_0.010_240)] placeholder:text-[oklch(0.65_0.008_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors resize-none" />
+                  className="w-full px-3 py-2.5 rounded-lg border border-[#BDC9CF] bg-[#F4F8FA] text-sm text-[#0A2233] placeholder:text-[#7A9AAA] focus:outline-none focus:border-[#55B1BF] focus:ring-2 focus:ring-[#55B1BF]/20 transition-colors resize-none" />
               </div>
             </div>
           )}
@@ -283,31 +283,31 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
           {tab === 'historial' && (
             <div>
               {loadingHistorial ? (
-                <p className="text-sm text-[oklch(0.60_0.008_240)] py-8 text-center">Cargando historial...</p>
+                <p className="text-sm text-[#6A8898] py-8 text-center">Cargando historial...</p>
               ) : historial.length === 0 ? (
                 <div className="py-12 text-center">
-                  <p className="text-sm text-[oklch(0.55_0.008_240)]">Sin cambios registrados aún.</p>
-                  <p className="text-xs text-[oklch(0.65_0.008_240)] mt-1">Los cambios de estado y notas aparecen aquí.</p>
+                  <p className="text-sm text-[#5A7888]">Sin cambios registrados aún.</p>
+                  <p className="text-xs text-[#7A9AAA] mt-1">Los cambios de estado y notas aparecen aquí.</p>
                 </div>
               ) : (
-                <ol className="relative border-l border-[oklch(0.90_0.008_240)] ml-2 space-y-5">
+                <ol className="relative border-l border-[#D9E1E5] ml-2 space-y-5">
                   {historial.map(entry => (
                     <li key={entry.id} className="ml-5">
-                      <div className="absolute -left-1.5 w-3 h-3 rounded-full bg-[oklch(0.88_0.008_240)] border-2 border-white" />
-                      <p className="text-xs text-[oklch(0.60_0.008_240)] mb-1">
-                        <span className="font-medium text-[oklch(0.35_0.010_240)]">{entry.usuario ?? 'Sistema'}</span>
+                      <div className="absolute -left-1.5 w-3 h-3 rounded-full bg-[#C8D5DA] border-2 border-white" />
+                      <p className="text-xs text-[#6A8898] mb-1">
+                        <span className="font-medium text-[#1E3E50]">{entry.usuario ?? 'Sistema'}</span>
                         {' · '}{formatFechaHora(entry.created_at)}
                       </p>
                       {entry.accion === 'estado_crm' ? (
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-[oklch(0.55_0.008_240)]">Estado →</span>
+                          <span className="text-xs text-[#5A7888]">Estado →</span>
                           {entry.valor_anterior && <LogLabel accion="estado_crm" valor={entry.valor_anterior} />}
-                          {entry.valor_anterior && <span className="text-xs text-[oklch(0.70_0.008_240)]">→</span>}
+                          {entry.valor_anterior && <span className="text-xs text-[#7A9AAA]">→</span>}
                           <LogLabel accion="estado_crm" valor={entry.valor_nuevo} />
                         </div>
                       ) : (
                         <div>
-                          <p className="text-xs text-[oklch(0.55_0.008_240)] mb-1">Notas actualizadas</p>
+                          <p className="text-xs text-[#5A7888] mb-1">Notas actualizadas</p>
                           <LogLabel accion="notas" valor={entry.valor_nuevo} />
                         </div>
                       )}
@@ -321,14 +321,14 @@ export function LicitacionDetail({ licitacion: lic, onClose, onUpdate }: Props) 
 
         {/* Footer */}
         {tab === 'detalle' && (
-          <div className="px-6 py-4 border-t border-[oklch(0.90_0.008_240)] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-[#D9E1E5] flex items-center justify-between">
             {crm?.usuario && (
-              <p className="text-xs text-[oklch(0.60_0.008_240)]">
+              <p className="text-xs text-[#6A8898]">
                 Actualizado por {crm.usuario}
               </p>
             )}
             <button onClick={handleSave} disabled={saving}
-              className="btn-primary ml-auto px-4 py-2 rounded-lg bg-[oklch(0.48_0.14_240)] hover:bg-[oklch(0.43_0.14_240)] text-white text-sm font-medium disabled:opacity-50">
+              className="btn-primary ml-auto px-4 py-2 rounded-lg bg-[#55B1BF] hover:bg-[#3D9AA8] text-white text-sm font-medium disabled:opacity-50">
               {saving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar'}
             </button>
           </div>

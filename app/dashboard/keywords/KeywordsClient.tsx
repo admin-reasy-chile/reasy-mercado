@@ -71,23 +71,23 @@ export function KeywordsClient({ userName }: { userName: string }) {
   const inactivas = keywords.filter(k => !k.activa)
 
   return (
-    <div className="min-h-screen bg-[oklch(0.97_0.005_240)]">
+    <div className="min-h-screen bg-[#EDF2F4]">
       {/* Topbar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-[oklch(0.90_0.008_240)] px-6 py-3">
+      <header className="sticky top-0 z-30 bg-white border-b border-[#D9E1E5] px-6 py-3">
         <div className="max-w-screen-xl mx-auto flex items-center gap-4">
           <button onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-[oklch(0.55_0.008_240)] hover:text-[oklch(0.30_0.010_240)] transition-colors">
+            className="flex items-center gap-2 text-[#5A7888] hover:text-[#0A2233] transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             <span className="text-sm">Volver</span>
           </button>
-          <span className="font-semibold text-[oklch(0.22_0.08_240)]">REASY</span>
-          <span className="text-xs text-[oklch(0.60_0.008_240)]">/ Palabras clave</span>
+          <span className="font-semibold text-[#0A2233]">REASY</span>
+          <span className="text-xs text-[#6A8898]">/ Palabras clave</span>
           <div className="flex-1" />
-          <span className="text-xs text-[oklch(0.55_0.008_240)] hidden sm:block">{userName}</span>
+          <span className="text-xs text-[#5A7888] hidden sm:block">{userName}</span>
           <button onClick={handleLogout}
-            className="text-xs text-[oklch(0.60_0.008_240)] hover:text-[oklch(0.35_0.010_240)] transition-colors">
+            className="text-xs text-[#6A8898] hover:text-[#1E3E50] transition-colors">
             Salir
           </button>
         </div>
@@ -106,8 +106,8 @@ export function KeywordsClient({ userName }: { userName: string }) {
         </div>
 
         {/* Agregar */}
-        <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] p-5">
-          <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-3">
+        <div className="bg-white rounded-xl border border-[#D9E1E5] p-5">
+          <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide mb-3">
             Agregar palabra clave
           </p>
           <form onSubmit={handleAdd} className="flex gap-2">
@@ -116,12 +116,12 @@ export function KeywordsClient({ userName }: { userName: string }) {
               value={nueva}
               onChange={e => { setNueva(e.target.value); setError('') }}
               placeholder="ej: gestión de desechos"
-              className="flex-1 px-3 py-2 rounded-lg border border-[oklch(0.85_0.010_240)] bg-[oklch(0.98_0.004_240)] text-sm text-[oklch(0.25_0.010_240)] placeholder:text-[oklch(0.65_0.008_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors"
+              className="flex-1 px-3 py-2 rounded-lg border border-[#BDC9CF] bg-[#F4F8FA] text-sm text-[#0A2233] placeholder:text-[#7A9AAA] focus:outline-none focus:border-[#55B1BF] focus:ring-2 focus:ring-[#55B1BF]/20 transition-colors"
             />
             <button
               type="submit"
               disabled={adding || !nueva.trim()}
-              className="px-4 py-2 rounded-lg bg-[oklch(0.48_0.14_240)] hover:bg-[oklch(0.43_0.14_240)] text-white text-sm font-medium disabled:opacity-50 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[#55B1BF] hover:bg-[#3D9AA8] text-white text-sm font-medium disabled:opacity-50 transition-colors"
             >
               {adding ? 'Agregando...' : 'Agregar'}
             </button>
@@ -130,32 +130,32 @@ export function KeywordsClient({ userName }: { userName: string }) {
         </div>
 
         {/* Lista activas */}
-        <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] overflow-hidden">
-          <div className="px-5 py-3 border-b border-[oklch(0.91_0.008_240)] flex items-center justify-between">
-            <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide">
+        <div className="bg-white rounded-xl border border-[#D9E1E5] overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#D9E1E5] flex items-center justify-between">
+            <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide">
               Activas
             </p>
             <span className="text-xs font-semibold text-emerald-600">{activas.length}</span>
           </div>
           {loading ? (
-            <p className="text-sm text-[oklch(0.60_0.008_240)] p-5">Cargando...</p>
+            <p className="text-sm text-[#6A8898] p-5">Cargando...</p>
           ) : activas.length === 0 ? (
-            <p className="text-sm text-[oklch(0.60_0.008_240)] p-5">No hay palabras clave activas.</p>
+            <p className="text-sm text-[#6A8898] p-5">No hay palabras clave activas.</p>
           ) : (
-            <ul className="divide-y divide-[oklch(0.93_0.006_240)]">
+            <ul className="divide-y divide-[#E8EEF1]">
               {activas.map(kw => (
                 <li key={kw.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                  <span className="flex-1 text-sm text-[oklch(0.28_0.010_240)] font-mono">{kw.palabra}</span>
+                  <span className="flex-1 text-sm text-[#0A2233] font-mono">{kw.palabra}</span>
                   <button
                     onClick={() => handleToggle(kw)}
-                    className="text-xs text-[oklch(0.60_0.008_240)] hover:text-amber-600 transition-colors px-2 py-1 rounded hover:bg-amber-50"
+                    className="text-xs text-[#6A8898] hover:text-amber-600 transition-colors px-2 py-1 rounded hover:bg-amber-50"
                   >
                     Pausar
                   </button>
                   <button
                     onClick={() => handleDelete(kw)}
-                    className="text-xs text-[oklch(0.60_0.008_240)] hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50"
+                    className="text-xs text-[#6A8898] hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50"
                   >
                     Eliminar
                   </button>
@@ -167,28 +167,28 @@ export function KeywordsClient({ userName }: { userName: string }) {
 
         {/* Lista inactivas */}
         {inactivas.length > 0 && (
-          <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] overflow-hidden">
-            <div className="px-5 py-3 border-b border-[oklch(0.91_0.008_240)] flex items-center justify-between">
-              <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide">
+          <div className="bg-white rounded-xl border border-[#D9E1E5] overflow-hidden">
+            <div className="px-5 py-3 border-b border-[#D9E1E5] flex items-center justify-between">
+              <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide">
                 Pausadas
               </p>
-              <span className="text-xs font-semibold text-[oklch(0.60_0.008_240)]">{inactivas.length}</span>
+              <span className="text-xs font-semibold text-[#6A8898]">{inactivas.length}</span>
             </div>
-            <ul className="divide-y divide-[oklch(0.93_0.006_240)]">
+            <ul className="divide-y divide-[#E8EEF1]">
               {inactivas.map(kw => (
                 <li key={kw.id} className="flex items-center gap-3 px-5 py-3 opacity-50">
                   <div className="w-1.5 h-1.5 rounded-full bg-neutral-300 shrink-0" />
-                  <span className="flex-1 text-sm text-[oklch(0.50_0.008_240)] font-mono line-through">{kw.palabra}</span>
+                  <span className="flex-1 text-sm text-[#4A6878] font-mono line-through">{kw.palabra}</span>
                   <button
                     onClick={() => handleToggle(kw)}
-                    className="text-xs text-[oklch(0.60_0.008_240)] hover:text-emerald-600 transition-colors px-2 py-1 rounded hover:bg-emerald-50 no-underline opacity-100"
+                    className="text-xs text-[#6A8898] hover:text-emerald-600 transition-colors px-2 py-1 rounded hover:bg-emerald-50 no-underline opacity-100"
                     style={{ textDecoration: 'none' }}
                   >
                     Activar
                   </button>
                   <button
                     onClick={() => handleDelete(kw)}
-                    className="text-xs text-[oklch(0.60_0.008_240)] hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 opacity-100"
+                    className="text-xs text-[#6A8898] hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 opacity-100"
                   >
                     Eliminar
                   </button>

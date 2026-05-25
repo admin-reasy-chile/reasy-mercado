@@ -31,28 +31,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[oklch(0.97_0.005_240)]">
+    <div className="min-h-screen flex items-center justify-center bg-[#EDF2F4]">
       <div className="w-full max-w-sm">
-        {/* Logo / Brand */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
-            <span className="text-2xl font-semibold tracking-tight text-[oklch(0.22_0.08_240)]">
+            <span className="text-2xl font-semibold tracking-tight text-[#0A2233]">
               REASY
             </span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[oklch(0.88_0.020_240)] text-[oklch(0.40_0.13_240)]">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#55B1BF]/15 text-[#55B1BF]">
               Mercado Público
             </span>
           </div>
-          <p className="text-sm text-[oklch(0.50_0.010_240)]">
+          <p className="text-sm text-[#6A8898]">
             Monitor de oportunidades REAS
           </p>
         </div>
 
-        {/* Form card */}
-        <div className="bg-white rounded-xl border border-[oklch(0.88_0.010_240)] shadow-sm p-8">
+        {/* Form */}
+        <div className="bg-white rounded-xl border border-[#D9E1E5] shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[oklch(0.30_0.010_240)] mb-1.5">
+              <label className="block text-sm font-medium text-[#0A2233] mb-1.5">
                 Email
               </label>
               <input
@@ -61,13 +61,13 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoFocus
-                className="w-full px-3 py-2.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-[oklch(0.98_0.004_240)] text-sm text-[oklch(0.20_0.010_240)] placeholder:text-[oklch(0.65_0.008_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg border border-[#D9E1E5] bg-[#F4F8FA] text-sm text-[#0A2233] placeholder:text-[#7A9AAA] focus:outline-none focus:border-[#55B1BF] focus:ring-2 focus:ring-[#55B1BF]/20 transition-colors"
                 placeholder="tu@reasy.cl"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[oklch(0.30_0.010_240)] mb-1.5">
+              <label className="block text-sm font-medium text-[#0A2233] mb-1.5">
                 Contraseña
               </label>
               <input
@@ -75,7 +75,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-[oklch(0.98_0.004_240)] text-sm text-[oklch(0.20_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg border border-[#D9E1E5] bg-[#F4F8FA] text-sm text-[#0A2233] focus:outline-none focus:border-[#55B1BF] focus:ring-2 focus:ring-[#55B1BF]/20 transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -89,14 +89,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-2.5 rounded-lg bg-[oklch(0.48_0.14_240)] hover:bg-[oklch(0.43_0.14_240)] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-2.5 rounded-lg bg-[#0A2233] hover:bg-[#051824] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Entrando...' : 'Ingresar'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-[oklch(0.65_0.008_240)] mt-6">
+        <p className="text-center text-xs text-[#7A9AAA] mt-6">
           Solo para el equipo REASY
         </p>
       </div>

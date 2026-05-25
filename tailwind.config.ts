@@ -10,13 +10,10 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50:  'oklch(0.97 0.008 240)',
-          100: 'oklch(0.94 0.012 240)',
-          200: 'oklch(0.88 0.020 240)',
-          500: 'oklch(0.55 0.14 240)',
-          600: 'oklch(0.48 0.14 240)',
-          700: 'oklch(0.40 0.13 240)',
-          900: 'oklch(0.22 0.08 240)',
+          navy:     '#0A2233',
+          teal:     '#55B1BF',
+          midnight: '#051824',
+          gray:     '#D9E1E5',
         },
       },
       fontFamily: {

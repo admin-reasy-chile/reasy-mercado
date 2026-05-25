@@ -6,6 +6,10 @@
 
 :root {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --navy:     #0A2233;
+  --teal:     #55B1BF;
+  --midnight: #051824;
+  --gray:     #D9E1E5;
 }
 
 * {
@@ -15,17 +19,17 @@
 body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: oklch(0.97 0.005 240);
-  color: oklch(0.18 0.01 240);
+  background-color: #EDF2F4;
+  color: #0A2233;
 }
 
-/* Row hover — fast, no bounce */
+/* Row hover */
 .licitacion-row {
   transition: background-color 150ms var(--ease-out);
   cursor: pointer;
 }
 .licitacion-row:hover {
-  background-color: oklch(0.94 0.010 240);
+  background-color: #EDF2F4;
 }
 
 /* Button press feedback */
@@ -53,28 +57,22 @@ body {
   animation: slideInRight 220ms var(--ease-out) forwards;
 }
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
-/* Semaforo dot pulse for urgente */
+/* Semaforo dot pulse */
 .dot-urgente {
   animation: pulse 2s ease-in-out infinite;
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50%       { opacity: 0.4; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .detail-panel { animation: none; }
-  .dot-urgente { animation: none; }
+  .detail-panel    { animation: none; }
+  .dot-urgente     { animation: none; }
   .btn-primary:active, .btn-sync:active { transform: none; }
-  .licitacion-row { transition: none; }
+  .licitacion-row  { transition: none; }
 }

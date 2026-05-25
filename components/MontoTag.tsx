@@ -9,9 +9,9 @@ function formatMonto(monto: number): string {
 }
 
 export function MontoTag({ monto }: Props) {
-  if (!monto) return <span className="text-xs text-[oklch(0.65_0.008_240)]">—</span>
+  if (!monto) return <span className="text-xs text-[#7A9AAA]">—</span>
   return (
-    <span className="text-xs font-mono font-medium text-[oklch(0.30_0.010_240)]">
+    <span className="text-xs font-mono font-medium text-[#0A2233]">
       {formatMonto(monto)}
     </span>
   )

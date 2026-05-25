@@ -156,25 +156,24 @@ export function DashboardClient({ userName }: Props) {
   })
 
   return (
-    <div className="min-h-screen bg-[oklch(0.97_0.005_240)]">
+    <div className="min-h-screen bg-[#EDF2F4]">
       {/* Topbar */}
-      <header className="sticky top-0 z-30 bg-white border-b border-[oklch(0.90_0.008_240)] px-6 py-3">
+      <header className="sticky top-0 z-30 bg-[#0A2233] px-6 py-3">
         <div className="max-w-screen-xl mx-auto flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-[oklch(0.22_0.08_240)]">REASY</span>
-            <span className="text-xs text-[oklch(0.60_0.008_240)]">/ Oportunidades</span>
+          <div className="flex items-center gap-2.5">
+            <span className="font-semibold text-white tracking-tight">REASY</span>
+            <span className="text-xs text-[#55B1BF]/80">Oportunidades</span>
           </div>
 
           <div className="flex-1" />
 
-          {/* Sync status */}
-          <span className="text-xs text-[oklch(0.60_0.008_240)] hidden sm:block">
+          <span className="text-xs text-white/40 hidden sm:block">
             {formatUltimaSync(stats?.ultima_sync ?? null)}
           </span>
 
           <button
             onClick={() => router.push('/dashboard/keywords')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" />
@@ -184,7 +183,7 @@ export function DashboardClient({ userName }: Props) {
 
           <button
             onClick={() => router.push('/dashboard/analytics')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -195,7 +194,7 @@ export function DashboardClient({ userName }: Props) {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="btn-sync flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white"
+            className="btn-sync flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#55B1BF] hover:bg-[#3D9AA8] text-xs font-medium text-white transition-colors"
           >
             <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -203,11 +202,11 @@ export function DashboardClient({ userName }: Props) {
             {syncing ? 'Actualizando...' : 'Actualizar'}
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[oklch(0.55_0.008_240)] hidden sm:block">{userName}</span>
+          <div className="flex items-center gap-3 pl-1 border-l border-white/15">
+            <span className="text-xs text-white/60 hidden sm:block">{userName}</span>
             <button
               onClick={handleLogout}
-              className="text-xs text-[oklch(0.60_0.008_240)] hover:text-[oklch(0.35_0.010_240)] transition-colors"
+              className="text-xs text-white/50 hover:text-white transition-colors"
             >
               Salir
             </button>
@@ -240,14 +239,14 @@ export function DashboardClient({ userName }: Props) {
                   onClick={() => setFilterSemaforo(isActive ? '' : filter as SemaforoEstado | '')}
                   className={`text-left p-4 rounded-xl border transition-colors
                     ${isActive
-                      ? `${cfg?.bg ?? 'bg-[oklch(0.94_0.010_240)]'} ${cfg?.border ?? 'border-[oklch(0.80_0.010_240)]'}`
-                      : 'bg-white border-[oklch(0.90_0.008_240)] hover:border-[oklch(0.80_0.010_240)]'
+                      ? `${cfg?.bg ?? 'bg-[#EAF0F3]'} ${cfg?.border ?? 'border-[#ADBDC5]'}`
+                      : 'bg-white border-[#D9E1E5] hover:border-[#ADBDC5]'
                     }`}
                 >
-                  <p className={`text-2xl font-semibold mb-0.5 ${cfg?.color ?? 'text-[oklch(0.22_0.08_240)]'}`}>
+                  <p className={`text-2xl font-semibold mb-0.5 ${cfg?.color ?? 'text-[#0A2233]'}`}>
                     {value}
                   </p>
-                  <p className="text-xs text-[oklch(0.55_0.008_240)]">{label}</p>
+                  <p className="text-xs text-[#5A7888]">{label}</p>
                 </button>
               )
             })}
@@ -256,25 +255,25 @@ export function DashboardClient({ userName }: Props) {
 
         {/* Resumen semanal */}
         {stats && (
-          <div className="flex items-center gap-3 mb-5 px-4 py-3 bg-white rounded-xl border border-[oklch(0.90_0.008_240)]">
-            <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.14_240)]" />
-            <span className="text-xs font-medium text-[oklch(0.40_0.010_240)]">Esta semana</span>
-            <span className="text-sm font-semibold text-[oklch(0.22_0.08_240)]">
+          <div className="flex items-center gap-3 mb-5 px-4 py-3 bg-white rounded-xl border border-[#D9E1E5]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#55B1BF]" />
+            <span className="text-xs font-medium text-[#2C4E60]">Esta semana</span>
+            <span className="text-sm font-semibold text-[#0A2233]">
               {stats.nuevas_esta_semana} nuevas licitaciones
             </span>
-            <span className="text-xs text-[oklch(0.60_0.008_240)]">·</span>
+            <span className="text-xs text-[#6A8898]">·</span>
             {stats.nuevas_esta_semana === stats.nuevas_semana_anterior ? (
-              <span className="text-xs text-[oklch(0.55_0.008_240)]">igual que la semana anterior</span>
+              <span className="text-xs text-[#5A7888]">igual que la semana anterior</span>
             ) : stats.nuevas_esta_semana > stats.nuevas_semana_anterior ? (
               <span className="text-xs text-emerald-600 font-medium">
                 ↑ {stats.nuevas_esta_semana - stats.nuevas_semana_anterior} más que la semana anterior
               </span>
             ) : (
-              <span className="text-xs text-[oklch(0.55_0.008_240)]">
+              <span className="text-xs text-[#5A7888]">
                 ↓ {stats.nuevas_semana_anterior - stats.nuevas_esta_semana} menos que la semana anterior
               </span>
             )}
-            <span className="text-xs text-[oklch(0.70_0.008_240)] ml-auto">
+            <span className="text-xs text-[#7A9AAA] ml-auto">
               sem. anterior: {stats.nuevas_semana_anterior}
             </span>
           </div>
@@ -287,13 +286,13 @@ export function DashboardClient({ userName }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar organismo, nombre..."
-            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.25_0.010_240)] placeholder:text-[oklch(0.65_0.008_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors w-56"
+            className="px-3 py-1.5 rounded-lg border border-[#BDC9CF] bg-white text-sm text-[#0A2233] placeholder:text-[#7A9AAA] focus:outline-none focus:border-[#55B1BF] focus:ring-2 focus:ring-[#55B1BF]/20 transition-colors w-56"
           />
 
           <select
             value={filterRegion}
             onChange={e => setFilterRegion(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-[#BDC9CF] bg-white text-sm text-[#1E3E50] focus:outline-none focus:border-[#55B1BF] transition-colors"
           >
             <option value="">Todas las regiones</option>
             {REGIONES.map(r => <option key={r} value={r}>{r}</option>)}
@@ -302,7 +301,7 @@ export function DashboardClient({ userName }: Props) {
           <select
             value={filterTipo}
             onChange={e => setFilterTipo(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-[#BDC9CF] bg-white text-sm text-[#1E3E50] focus:outline-none focus:border-[#55B1BF] transition-colors"
           >
             <option value="">Todos los tipos</option>
             {['L1', 'LE', 'LP', 'LQ', 'LR'].map(t => <option key={t} value={t}>{t}</option>)}
@@ -311,7 +310,7 @@ export function DashboardClient({ userName }: Props) {
           <select
             value={filterCRM}
             onChange={e => setFilterCRM(e.target.value as EstadoCRM | '')}
-            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-[#BDC9CF] bg-white text-sm text-[#1E3E50] focus:outline-none focus:border-[#55B1BF] transition-colors"
           >
             <option value="">Todos los estados CRM</option>
             {(Object.entries(CRM_CONFIG) as [EstadoCRM, { label: string; color: string }][]).map(([key, cfg]) => (
@@ -322,20 +321,20 @@ export function DashboardClient({ userName }: Props) {
           {(filterSemaforo || filterRegion || filterTipo || filterCRM || search) && (
             <button
               onClick={() => { setFilterSemaforo(''); setFilterRegion(''); setFilterTipo(''); setFilterCRM(''); setSearch('') }}
-              className="px-3 py-1.5 text-xs text-[oklch(0.55_0.008_240)] hover:text-[oklch(0.30_0.010_240)] transition-colors"
+              className="px-3 py-1.5 text-xs text-[#5A7888] hover:text-[#0A2233] transition-colors"
             >
               Limpiar filtros
             </button>
           )}
 
-          <span className="ml-auto text-xs text-[oklch(0.60_0.008_240)]">
+          <span className="ml-auto text-xs text-[#6A8898]">
             {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
           </span>
 
           <button
             onClick={() => exportarCSV(filtered)}
             disabled={filtered.length === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#BDC9CF] bg-white text-xs font-medium text-[#2C4E60] hover:border-[#7A9AAA] disabled:opacity-40 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -345,15 +344,15 @@ export function DashboardClient({ userName }: Props) {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#D9E1E5] overflow-hidden">
           {loading ? (
-            <div className="py-16 text-center text-sm text-[oklch(0.60_0.008_240)]">
+            <div className="py-16 text-center text-sm text-[#6A8898]">
               Cargando licitaciones...
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-sm text-[oklch(0.55_0.008_240)]">No hay licitaciones activas con los filtros aplicados.</p>
-              <p className="text-xs text-[oklch(0.65_0.008_240)] mt-1">
+              <p className="text-sm text-[#5A7888]">No hay licitaciones activas con los filtros aplicados.</p>
+              <p className="text-xs text-[#7A9AAA] mt-1">
                 El sync automático corre a las 9:00 AM.
               </p>
             </div>
@@ -361,15 +360,15 @@ export function DashboardClient({ userName }: Props) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[oklch(0.91_0.008_240)] bg-[oklch(0.97_0.005_240)]">
+                  <tr className="border-b border-[#D9E1E5] bg-[#EDF2F4]">
                     {['Score', 'Estado', 'Organismo', 'Región', 'Licitación', 'Cierre', 'Monto', 'CRM'].map(h => (
-                      <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[oklch(0.50_0.008_240)] whitespace-nowrap">
+                      <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[#4A6878] whitespace-nowrap">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[oklch(0.93_0.006_240)]">
+                <tbody className="divide-y divide-[#E8EEF1]">
                   {filtered.map(lic => (
                     <tr
                       key={lic.codigo}
@@ -381,28 +380,28 @@ export function DashboardClient({ userName }: Props) {
                           <span className={`text-xs font-bold tabular-nums ${
                             lic.score >= 70 ? 'text-emerald-600' :
                             lic.score >= 40 ? 'text-amber-600' :
-                            'text-[oklch(0.60_0.008_240)]'
+                            'text-[#6A8898]'
                           }`}>
                             {lic.score}
                           </span>
-                        ) : <span className="text-xs text-[oklch(0.75_0.008_240)]">—</span>}
+                        ) : <span className="text-xs text-[#9EB0BA]">—</span>}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <SemaforoTag estado={lic.semaforo} diasRestantes={lic.dias_restantes} size="sm" />
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-[oklch(0.22_0.010_240)] truncate max-w-[220px]">{lic.organismo}</p>
-                        <p className="text-xs text-[oklch(0.60_0.008_240)] font-mono mt-0.5">{lic.codigo}</p>
+                        <p className="font-medium text-[#0A2233] truncate max-w-[220px]">{lic.organismo}</p>
+                        <p className="text-xs text-[#6A8898] font-mono mt-0.5">{lic.codigo}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-[oklch(0.45_0.008_240)] whitespace-nowrap">
+                      <td className="px-4 py-3 text-xs text-[#3E5E6E] whitespace-nowrap">
                         {lic.region?.replace('Metropolitana de Santiago', 'Metropolitana') ?? '—'}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-[oklch(0.30_0.010_240)] line-clamp-2 max-w-xs leading-snug">
+                        <p className="text-[#0A2233] line-clamp-2 max-w-xs leading-snug">
                           {lic.nombre}
                         </p>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-xs text-[oklch(0.40_0.008_240)]">
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-[#2C4E60]">
                         {formatFecha(lic.fecha_cierre)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -425,19 +424,19 @@ export function DashboardClient({ userName }: Props) {
         {/* Actividad reciente */}
         {actividad.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-[#4A6878] uppercase tracking-wide mb-3">
               Actividad reciente del equipo
             </p>
-            <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] divide-y divide-[oklch(0.93_0.006_240)]">
+            <div className="bg-white rounded-xl border border-[#D9E1E5] divide-y divide-[#E8EEF1]">
               {actividad.slice(0, 8).map(entry => (
                 <div key={entry.id} className="flex items-start gap-3 px-4 py-3">
-                  <div className="w-6 h-6 rounded-full bg-[oklch(0.92_0.010_240)] flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-medium text-[oklch(0.45_0.010_240)]">
+                  <div className="w-6 h-6 rounded-full bg-[#E4ECF0] flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-xs font-medium text-[#3E5E6E]">
                       {(entry.usuario ?? 'S')[0].toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-[oklch(0.35_0.010_240)]">
+                    <p className="text-xs text-[#1E3E50]">
                       <span className="font-medium">{entry.usuario ?? 'Sistema'}</span>
                       {entry.accion === 'estado_crm' ? (
                         <> marcó como <span className={`font-medium ${CRM_CONFIG[entry.valor_nuevo as EstadoCRM]?.color ?? ''}`}>
@@ -447,11 +446,11 @@ export function DashboardClient({ userName }: Props) {
                         <> actualizó las notas</>
                       )}
                     </p>
-                    <p className="text-xs text-[oklch(0.60_0.008_240)] truncate mt-0.5">
+                    <p className="text-xs text-[#6A8898] truncate mt-0.5">
                       {entry.licitaciones?.organismo ?? entry.licitacion_codigo}
                     </p>
                   </div>
-                  <span className="text-xs text-[oklch(0.65_0.008_240)] shrink-0">
+                  <span className="text-xs text-[#7A9AAA] shrink-0">
                     {tiempoRelativo(entry.created_at)}
                   </span>
                 </div>
