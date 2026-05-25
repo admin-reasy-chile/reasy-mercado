@@ -35,14 +35,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <span className="text-2xl font-semibold tracking-tight text-[#0A2233]">
-              REASY
-            </span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#55B1BF]/15 text-[#55B1BF]">
-              Mercado Público
-            </span>
-          </div>
+          <img
+            src="/logo-horizontal-dark..png"
+            alt="REASY"
+            className="h-10 mx-auto mb-4"
+          />
           <p className="text-sm text-[#6A8898]">
             Monitor de oportunidades REAS
           </p>
