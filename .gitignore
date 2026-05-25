@@ -1,0 +1,28 @@
+# deps
+node_modules/
+.pnp
+.pnp.js
+
+# build
+.next/
+out/
+
+# env — NUNCA subir al repositorio
+.env
+.env.local
+.env.*.local
+
+# debug
+npm-debug.log*
+
+# system
+.DS_Store
+*.pem
+
+# vercel
+.vercel
+
+# python
+__pycache__/
+*.pyc
+.venv/

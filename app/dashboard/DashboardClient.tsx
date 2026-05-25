@@ -1,0 +1,307 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { Licitacion, DashboardStats, SemaforoEstado, EstadoCRM, SEMAFORO_CONFIG } from '@/lib/types'
+import { SemaforoTag } from '@/components/SemaforoTag'
+import { CRMBadge } from '@/components/CRMBadge'
+import { MontoTag } from '@/components/MontoTag'
+import { LicitacionDetail } from '@/components/LicitacionDetail'
+
+interface Props {
+  userName: string
+}
+
+function formatFecha(f: string | null) {
+  if (!f) return '—'
+  return new Date(f).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })
+}
+
+function formatUltimaSync(ts: string | null) {
+  if (!ts) return 'Nunca sincronizado'
+  const d = new Date(ts)
+  return `Última sync: ${d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })} ${d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`
+}
+
+const REGIONES = [
+  'Arica y Parinacota', 'Tarapacá', 'Antofagasta', 'Atacama', 'Coquimbo',
+  'Valparaíso', 'Metropolitana de Santiago', "O'Higgins", 'Maule', 'Ñuble',
+  'Biobío', 'La Araucanía', 'Los Ríos', 'Los Lagos', 'Aysén', 'Magallanes',
+]
+
+export function DashboardClient({ userName }: Props) {
+  const router = useRouter()
+  const [licitaciones, setLicitaciones] = useState<Licitacion[]>([])
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
+  const [selected, setSelected] = useState<Licitacion | null>(null)
+
+  // Filters
+  const [filterSemaforo, setFilterSemaforo] = useState<SemaforoEstado | ''>('')
+  const [filterRegion, setFilterRegion] = useState('')
+  const [filterTipo, setFilterTipo] = useState('')
+  const [search, setSearch] = useState('')
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams({ estado: 'publicada' })
+    if (filterSemaforo) params.set('semaforo', filterSemaforo)
+    if (filterRegion)   params.set('region', filterRegion)
+    if (filterTipo)     params.set('tipo', filterTipo)
+
+    const [licRes, statsRes] = await Promise.all([
+      fetch(`/api/licitaciones?${params}`),
+      fetch('/api/stats'),
+    ])
+
+    if (licRes.status === 401 || statsRes.status === 401) {
+      router.push('/login')
+      return
+    }
+
+    const [licData, statsData] = await Promise.all([licRes.json(), statsRes.json()])
+    setLicitaciones(licData.data ?? [])
+    setStats(statsData.data ?? null)
+    setLoading(false)
+  }, [filterSemaforo, filterRegion, filterTipo, router])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  async function handleSync() {
+    setSyncing(true)
+    setSyncMsg('')
+    const res = await fetch('/api/sync', { method: 'POST' })
+    const data = await res.json()
+    setSyncMsg(data.message)
+    setSyncing(false)
+    if (data.ok) setTimeout(() => { fetchData(); setSyncMsg('') }, 3000)
+  }
+
+  async function handleCRMUpdate(codigo: string, update: { estado_crm?: EstadoCRM; notas?: string }) {
+    await fetch(`/api/licitaciones/${codigo}/seguimiento`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(update),
+    })
+    await fetchData()
+  }
+
+  async function handleLogout() {
+    await fetch('/api/auth', { method: 'DELETE' })
+    router.push('/login')
+  }
+
+  const filtered = licitaciones.filter(l => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      l.nombre.toLowerCase().includes(q) ||
+      l.organismo.toLowerCase().includes(q) ||
+      l.codigo.toLowerCase().includes(q)
+    )
+  })
+
+  return (
+    <div className="min-h-screen bg-[oklch(0.97_0.005_240)]">
+      {/* Topbar */}
+      <header className="sticky top-0 z-30 bg-white border-b border-[oklch(0.90_0.008_240)] px-6 py-3">
+        <div className="max-w-screen-xl mx-auto flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-[oklch(0.22_0.08_240)]">REASY</span>
+            <span className="text-xs text-[oklch(0.60_0.008_240)]">/ Oportunidades</span>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Sync status */}
+          <span className="text-xs text-[oklch(0.60_0.008_240)] hidden sm:block">
+            {formatUltimaSync(stats?.ultima_sync ?? null)}
+          </span>
+
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="btn-sync flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] bg-white"
+          >
+            <svg className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {syncing ? 'Actualizando...' : 'Actualizar'}
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[oklch(0.55_0.008_240)] hidden sm:block">{userName}</span>
+            <button
+              onClick={handleLogout}
+              className="text-xs text-[oklch(0.60_0.008_240)] hover:text-[oklch(0.35_0.010_240)] transition-colors"
+            >
+              Salir
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-screen-xl mx-auto px-6 py-6">
+        {/* Sync message */}
+        {syncMsg && (
+          <div className="mb-4 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
+            {syncMsg}
+          </div>
+        )}
+
+        {/* Stats cards */}
+        {stats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {[
+              { label: 'Urgentes', value: stats.urgentes, semaforo: 'urgente' as SemaforoEstado, filter: 'urgente' },
+              { label: 'Próximas', value: stats.proximas, semaforo: 'proximo' as SemaforoEstado, filter: 'proximo' },
+              { label: 'Con tiempo', value: stats.con_tiempo, semaforo: 'con_tiempo' as SemaforoEstado, filter: 'con_tiempo' },
+              { label: 'Total activas', value: stats.total_activas, semaforo: null, filter: '' },
+            ].map(({ label, value, semaforo, filter }) => {
+              const cfg = semaforo ? SEMAFORO_CONFIG[semaforo] : null
+              const isActive = filterSemaforo === filter
+              return (
+                <button
+                  key={label}
+                  onClick={() => setFilterSemaforo(isActive ? '' : filter as SemaforoEstado | '')}
+                  className={`text-left p-4 rounded-xl border transition-colors
+                    ${isActive
+                      ? `${cfg?.bg ?? 'bg-[oklch(0.94_0.010_240)]'} ${cfg?.border ?? 'border-[oklch(0.80_0.010_240)]'}`
+                      : 'bg-white border-[oklch(0.90_0.008_240)] hover:border-[oklch(0.80_0.010_240)]'
+                    }`}
+                >
+                  <p className={`text-2xl font-semibold mb-0.5 ${cfg?.color ?? 'text-[oklch(0.22_0.08_240)]'}`}>
+                    {value}
+                  </p>
+                  <p className="text-xs text-[oklch(0.55_0.008_240)]">{label}</p>
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <input
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar organismo, nombre..."
+            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.25_0.010_240)] placeholder:text-[oklch(0.65_0.008_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] focus:ring-2 focus:ring-[oklch(0.55_0.14_240)]/20 transition-colors w-56"
+          />
+
+          <select
+            value={filterRegion}
+            onChange={e => setFilterRegion(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+          >
+            <option value="">Todas las regiones</option>
+            {REGIONES.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+
+          <select
+            value={filterTipo}
+            onChange={e => setFilterTipo(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-sm text-[oklch(0.35_0.010_240)] focus:outline-none focus:border-[oklch(0.55_0.14_240)] transition-colors"
+          >
+            <option value="">Todos los tipos</option>
+            {['L1', 'LE', 'LP', 'LQ', 'LR'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          {(filterSemaforo || filterRegion || filterTipo || search) && (
+            <button
+              onClick={() => { setFilterSemaforo(''); setFilterRegion(''); setFilterTipo(''); setSearch('') }}
+              className="px-3 py-1.5 text-xs text-[oklch(0.55_0.008_240)] hover:text-[oklch(0.30_0.010_240)] transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          )}
+
+          <span className="ml-auto text-xs text-[oklch(0.60_0.008_240)]">
+            {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] overflow-hidden">
+          {loading ? (
+            <div className="py-16 text-center text-sm text-[oklch(0.60_0.008_240)]">
+              Cargando licitaciones...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-sm text-[oklch(0.55_0.008_240)]">No hay licitaciones activas con los filtros aplicados.</p>
+              <p className="text-xs text-[oklch(0.65_0.008_240)] mt-1">
+                El sync automático corre a las 9:00 AM.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[oklch(0.91_0.008_240)] bg-[oklch(0.97_0.005_240)]">
+                    {['Estado', 'Organismo', 'Región', 'Licitación', 'Cierre', 'Monto', 'CRM'].map(h => (
+                      <th key={h} className="text-left px-4 py-3 text-xs font-medium text-[oklch(0.50_0.008_240)] whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[oklch(0.93_0.006_240)]">
+                  {filtered.map(lic => (
+                    <tr
+                      key={lic.codigo}
+                      className={`licitacion-row ${lic.semaforo === 'urgente' ? 'bg-red-50/50' : ''}`}
+                      onClick={() => setSelected(lic)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <SemaforoTag estado={lic.semaforo} diasRestantes={lic.dias_restantes} size="sm" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-[oklch(0.22_0.010_240)] truncate max-w-[220px]">{lic.organismo}</p>
+                        <p className="text-xs text-[oklch(0.60_0.008_240)] font-mono mt-0.5">{lic.codigo}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-[oklch(0.45_0.008_240)] whitespace-nowrap">
+                        {lic.region?.replace('Metropolitana de Santiago', 'Metropolitana') ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-[oklch(0.30_0.010_240)] line-clamp-2 max-w-xs leading-snug">
+                          {lic.nombre}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-[oklch(0.40_0.008_240)]">
+                        {formatFecha(lic.fecha_cierre)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <MontoTag monto={lic.monto_estimado} />
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                        {lic.seguimiento?.estado_crm && (
+                          <CRMBadge estado={lic.seguimiento.estado_crm} />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Detail panel */}
+      {selected && (
+        <LicitacionDetail
+          licitacion={selected}
+          onClose={() => setSelected(null)}
+          onUpdate={async (codigo, data) => {
+            await handleCRMUpdate(codigo, data)
+            setSelected(prev => prev ? { ...prev, seguimiento: { ...prev.seguimiento, ...data } as any } : null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
