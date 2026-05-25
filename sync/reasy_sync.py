@@ -12,7 +12,6 @@ Modo demo activo automáticamente si no hay API ticket.
 
 import os
 import sys
-import json
 import datetime
 import requests
 
@@ -56,7 +55,7 @@ ESTADOS_BUSQUEDA = ["publicada", "cerrada", "adjudicada"]
 
 def buscar_licitaciones(ticket: str, busqueda: str, estado: str) -> list:
     try:
-        resp = requests.get(BASE_URL, params={"ticket": ticket, "busqueda": busqueda, "estado": estado}, timeout=30)
+        resp = requests.get(BASE_URL, params={"ticket": ticket, "q": busqueda, "estado": estado}, timeout=30)
         resp.raise_for_status()
         return resp.json().get("Listado", [])
     except Exception as e:
@@ -65,10 +64,12 @@ def buscar_licitaciones(ticket: str, busqueda: str, estado: str) -> list:
 
 
 def buscar_todas(ticket: str) -> list:
+    import time
     encontradas = {}
     for estado in ESTADOS_BUSQUEDA:
         print(f"\n🔍 {estado.upper()}")
         for kw in PALABRAS_CLAVE:
+            time.sleep(1.5)  # evitar rate limit 429
             resultados = buscar_licitaciones(ticket, kw, estado)
             for lic in resultados:
                 codigo = lic.get("CodigoExterno", "")
