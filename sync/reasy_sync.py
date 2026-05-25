@@ -289,69 +289,87 @@ def supabase_upsert(tabla: str, registros: list) -> int:
     return total
 
 
-def enviar_alerta_email(urgentes: list):
-    """Envía email con licitaciones urgentes via Resend."""
-    if not RESEND_KEY or not urgentes:
+def obtener_codigos_existentes(codigos: list) -> set:
+    """Retorna los codigos que ya existen en Supabase."""
+    existentes = set()
+    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    for i in range(0, len(codigos), 100):
+        batch = codigos[i:i + 100]
+        in_val = ','.join(batch)
+        url = f"{SUPABASE_URL}/rest/v1/licitaciones?select=codigo&codigo=in.({in_val})"
+        try:
+            resp = requests.get(url, headers=headers, timeout=15)
+            if resp.ok:
+                for r in resp.json():
+                    existentes.add(r['codigo'])
+        except Exception:
+            pass
+    return existentes
+
+
+def enviar_email_nuevas(nuevas: list):
+    """Envía email con las nuevas licitaciones detectadas hoy."""
+    if not RESEND_KEY or not nuevas:
         return
 
+    SEMAFORO_COLOR = {
+        'urgente':   ('#b91c1c', '🔴'),
+        'proximo':   ('#b45309', '🟡'),
+        'con_tiempo':('#065f46', '🟢'),
+    }
+
     filas_html = ""
-    for l in urgentes:
-        dias = l.get("dias_restantes", "?")
+    for l in sorted(nuevas, key=lambda x: x.get('dias_restantes') or 999):
+        dias     = l.get('dias_restantes')
+        color, dot = SEMAFORO_COLOR.get(l.get('semaforo', ''), ('#374151', '⚪'))
+        dias_str = f"{dias}d" if dias is not None and dias >= 0 else "—"
+        monto_str = f"${l['monto_estimado']:,.0f}" if l.get('monto_estimado') else "—"
         filas_html += f"""
         <tr>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;">
-            <a href="{l['url']}" style="color:#b91c1c;font-weight:600;text-decoration:none;">{l['nombre'][:80]}</a>
-            <br><span style="color:#6b7280;font-size:12px;">{l['organismo']} · {l['region']}</span>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">
+            {dot}&nbsp;<a href="{l['url']}" style="color:#0A2233;font-weight:600;text-decoration:none;">{l['nombre'][:80]}</a>
+            <br><span style="color:#6b7280;font-size:12px;">{l['organismo']} · {l.get('region','')}</span>
           </td>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:center;font-weight:700;color:#b91c1c;">
-            {dias}d
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:700;color:{color};white-space:nowrap;">
+            {dias_str}
           </td>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:right;color:#374151;">
-            ${l['monto_estimado']:,.0f} CLP
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right;color:#374151;white-space:nowrap;">
+            {monto_str}
           </td>
-        </tr>""" if l.get("monto_estimado") else f"""
-        <tr>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;">
-            <a href="{l['url']}" style="color:#b91c1c;font-weight:600;text-decoration:none;">{l['nombre'][:80]}</a>
-            <br><span style="color:#6b7280;font-size:12px;">{l['organismo']} · {l['region']}</span>
-          </td>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:center;font-weight:700;color:#b91c1c;">
-            {dias}d
-          </td>
-          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:right;color:#9ca3af;">—</td>
         </tr>"""
 
+    n = len(nuevas)
     html = f"""
-    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-      <div style="background:#b91c1c;padding:24px 32px;">
-        <p style="color:#fecaca;font-size:12px;margin:0 0 4px;">REASY · Mercado Público Chile</p>
-        <h1 style="color:#fff;font-size:22px;margin:0;">
-          🔴 {len(urgentes)} licitación{'es' if len(urgentes) > 1 else ''} urgente{'s' if len(urgentes) > 1 else ''}
+    <div style="font-family:Inter,system-ui,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+      <div style="background:#0A2233;padding:24px 32px;">
+        <p style="color:#55B1BF;font-size:11px;margin:0 0 6px;letter-spacing:0.05em;text-transform:uppercase;">IA REASY · Mercado Público Chile</p>
+        <h1 style="color:#fff;font-size:20px;margin:0;font-weight:600;">
+          {n} nueva{'s' if n > 1 else ''} licitación{'es' if n > 1 else ''} REAS
         </h1>
-        <p style="color:#fca5a5;margin:8px 0 0;font-size:14px;">Cierra{'n' if len(urgentes) > 1 else ''} en 5 días o menos</p>
+        <p style="color:#94a3b8;margin:6px 0 0;font-size:13px;">
+          {datetime.date.today().strftime('%-d de %B de %Y')}
+        </p>
       </div>
       <div style="padding:24px 32px;">
         <table style="width:100%;border-collapse:collapse;">
           <thead>
-            <tr style="background:#fef2f2;">
-              <th style="padding:10px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;">LICITACIÓN</th>
-              <th style="padding:10px;text-align:center;font-size:12px;color:#6b7280;font-weight:600;">DÍAS</th>
-              <th style="padding:10px;text-align:right;font-size:12px;color:#6b7280;font-weight:600;">MONTO</th>
+            <tr style="background:#EDF2F4;">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;">Licitación</th>
+              <th style="padding:10px 12px;text-align:center;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;">Cierre</th>
+              <th style="padding:10px 12px;text-align:right;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;">Monto</th>
             </tr>
           </thead>
           <tbody>{filas_html}</tbody>
         </table>
         <div style="margin-top:24px;text-align:center;">
           <a href="https://reasy-mercado.vercel.app/dashboard"
-             style="background:#1d4ed8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
-            Ver dashboard →
+             style="background:#55B1BF;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;">
+            Ver en dashboard →
           </a>
         </div>
       </div>
-      <div style="padding:16px 32px;border-top:1px solid #f3f4f6;text-align:center;">
-        <p style="color:#9ca3af;font-size:12px;margin:0;">
-          REASY · Sistema de Oportunidades Mercado Público
-        </p>
+      <div style="padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
+        <p style="color:#9ca3af;font-size:11px;margin:0;">IA REASY · Sistema de Oportunidades Mercado Público</p>
       </div>
     </div>"""
 
@@ -362,13 +380,13 @@ def enviar_alerta_email(urgentes: list):
             json={
                 "from": "IA REASY <IA@reasy.cl>",
                 "to": USUARIOS_EMAIL,
-                "subject": f"🔴 {len(urgentes)} licitación{'es' if len(urgentes) > 1 else ''} URGENTE{'S' if len(urgentes) > 1 else ''} en Mercado Público",
+                "subject": f"{'🔴' if any(l.get('semaforo')=='urgente' for l in nuevas) else '🆕'} {n} nueva{'s' if n>1 else ''} licitación{'es' if n>1 else ''} REAS en Mercado Público",
                 "html": html,
             },
             timeout=15
         )
         if resp.ok:
-            print(f"📧 Email enviado a {len(USUARIOS_EMAIL)} usuarios")
+            print(f"📧 Email enviado a {len(USUARIOS_EMAIL)} usuarios ({n} nuevas licitaciones)")
         else:
             print(f"  ⚠ Email error: {resp.text[:100]}")
     except Exception as e:
@@ -436,20 +454,25 @@ def main():
     print(f"\n⚙  Procesando {len(raw)} licitaciones REAS...")
     licitaciones = procesar(raw)
 
+    # Detectar cuáles son nuevas (no estaban en la DB)
+    codigos_actuales = [l["codigo"] for l in licitaciones]
+    codigos_existentes = obtener_codigos_existentes(codigos_actuales)
+    licitaciones_nuevas = [l for l in licitaciones if l["codigo"] not in codigos_existentes]
+
     print("💾 Guardando en Supabase...")
     total = supabase_upsert("licitaciones", licitaciones)
     print(f"✅ {total} registros guardados")
 
-    activas        = [l for l in licitaciones if l["estado"] == "publicada"]
-    lics_urgentes  = [l for l in activas if l["semaforo"] == "urgente"]
-    supabase_log(total=total, modo=modo)
+    activas  = [l for l in licitaciones if l["estado"] == "publicada"]
+    nuevas   = [l for l in licitaciones_nuevas if l["estado"] == "publicada"]
+    supabase_log(total=len(licitaciones), modo=modo)
 
-    print(f"\n📊 Total REAS: {len(licitaciones)} | Activas: {len(activas)} | 🔴 Urgentes: {len(lics_urgentes)}")
+    print(f"\n📊 Total REAS: {len(licitaciones)} | Activas: {len(activas)} | 🆕 Nuevas hoy: {len(nuevas)}")
 
-    if lics_urgentes:
-        enviar_alerta_email(lics_urgentes)
+    if nuevas:
+        enviar_email_nuevas(nuevas)
     else:
-        print("📧 Sin urgentes hoy — no se envía email")
+        print("📧 Sin licitaciones nuevas hoy — no se envía email")
     print("=" * 55)
 
 
