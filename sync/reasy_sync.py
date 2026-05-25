@@ -17,6 +17,13 @@ import requests
 API_TICKET    = os.environ.get("MERCADO_PUBLICO_TICKET", "")
 SUPABASE_URL  = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY  = os.environ.get("SUPABASE_SERVICE_KEY", "")
+RESEND_KEY    = os.environ.get("RESEND_API_KEY", "")
+
+USUARIOS_EMAIL = [
+    "cdemartini@reasy.cl",
+    "ndemartini@reasy.cl",
+    "carlosdemartini@reasy.cl",
+]
 
 BASE_URL = "https://api.mercadopublico.cl/servicios/v1/publico/licitaciones.json"
 
@@ -210,6 +217,92 @@ def supabase_upsert(tabla: str, registros: list) -> int:
     return total
 
 
+def enviar_alerta_email(urgentes: list):
+    """Envía email con licitaciones urgentes via Resend."""
+    if not RESEND_KEY or not urgentes:
+        return
+
+    filas_html = ""
+    for l in urgentes:
+        dias = l.get("dias_restantes", "?")
+        filas_html += f"""
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;">
+            <a href="{l['url']}" style="color:#b91c1c;font-weight:600;text-decoration:none;">{l['nombre'][:80]}</a>
+            <br><span style="color:#6b7280;font-size:12px;">{l['organismo']} · {l['region']}</span>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:center;font-weight:700;color:#b91c1c;">
+            {dias}d
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:right;color:#374151;">
+            ${l['monto_estimado']:,.0f} CLP
+          </td>
+        </tr>""" if l.get("monto_estimado") else f"""
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;">
+            <a href="{l['url']}" style="color:#b91c1c;font-weight:600;text-decoration:none;">{l['nombre'][:80]}</a>
+            <br><span style="color:#6b7280;font-size:12px;">{l['organismo']} · {l['region']}</span>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:center;font-weight:700;color:#b91c1c;">
+            {dias}d
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #fee2e2;text-align:right;color:#9ca3af;">—</td>
+        </tr>"""
+
+    html = f"""
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+      <div style="background:#b91c1c;padding:24px 32px;">
+        <p style="color:#fecaca;font-size:12px;margin:0 0 4px;">REASY · Mercado Público Chile</p>
+        <h1 style="color:#fff;font-size:22px;margin:0;">
+          🔴 {len(urgentes)} licitación{'es' if len(urgentes) > 1 else ''} urgente{'s' if len(urgentes) > 1 else ''}
+        </h1>
+        <p style="color:#fca5a5;margin:8px 0 0;font-size:14px;">Cierra{'n' if len(urgentes) > 1 else ''} en 5 días o menos</p>
+      </div>
+      <div style="padding:24px 32px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#fef2f2;">
+              <th style="padding:10px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;">LICITACIÓN</th>
+              <th style="padding:10px;text-align:center;font-size:12px;color:#6b7280;font-weight:600;">DÍAS</th>
+              <th style="padding:10px;text-align:right;font-size:12px;color:#6b7280;font-weight:600;">MONTO</th>
+            </tr>
+          </thead>
+          <tbody>{filas_html}</tbody>
+        </table>
+        <div style="margin-top:24px;text-align:center;">
+          <a href="https://reasy-mercado.vercel.app/dashboard"
+             style="background:#1d4ed8;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+            Ver dashboard →
+          </a>
+        </div>
+      </div>
+      <div style="padding:16px 32px;border-top:1px solid #f3f4f6;text-align:center;">
+        <p style="color:#9ca3af;font-size:12px;margin:0;">
+          REASY · Sistema de Oportunidades Mercado Público
+        </p>
+      </div>
+    </div>"""
+
+    try:
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+            json={
+                "from": "REASY Alertas <onboarding@resend.dev>",
+                "to": USUARIOS_EMAIL,
+                "subject": f"🔴 {len(urgentes)} licitación{'es' if len(urgentes) > 1 else ''} URGENTE{'S' if len(urgentes) > 1 else ''} en Mercado Público",
+                "html": html,
+            },
+            timeout=15
+        )
+        if resp.ok:
+            print(f"📧 Email enviado a {len(USUARIOS_EMAIL)} usuarios")
+        else:
+            print(f"  ⚠ Email error: {resp.text[:100]}")
+    except Exception as e:
+        print(f"  ⚠ Email error: {e}")
+
+
 def supabase_log(total: int, modo: str):
     url = f"{SUPABASE_URL}/rest/v1/sync_log"
     headers = {
@@ -275,11 +368,16 @@ def main():
     total = supabase_upsert("licitaciones", licitaciones)
     print(f"✅ {total} registros guardados")
 
-    activas  = [l for l in licitaciones if l["estado"] == "publicada"]
-    urgentes = sum(1 for l in activas if l["semaforo"] == "urgente")
+    activas        = [l for l in licitaciones if l["estado"] == "publicada"]
+    lics_urgentes  = [l for l in activas if l["semaforo"] == "urgente"]
     supabase_log(total=total, modo=modo)
 
-    print(f"\n📊 Total REAS: {len(licitaciones)} | Activas: {len(activas)} | 🔴 Urgentes: {urgentes}")
+    print(f"\n📊 Total REAS: {len(licitaciones)} | Activas: {len(activas)} | 🔴 Urgentes: {len(lics_urgentes)}")
+
+    if lics_urgentes:
+        enviar_alerta_email(lics_urgentes)
+    else:
+        print("📧 Sin urgentes hoy — no se envía email")
     print("=" * 55)
 
 
