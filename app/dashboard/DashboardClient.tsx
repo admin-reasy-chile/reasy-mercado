@@ -12,9 +12,56 @@ interface Props {
   userName: string
 }
 
+interface ActividadEntry {
+  id: number
+  usuario: string | null
+  accion: string
+  valor_anterior: string | null
+  valor_nuevo: string | null
+  created_at: string
+  licitacion_codigo: string
+  licitaciones: { nombre: string; organismo: string } | null
+}
+
 function formatFecha(f: string | null) {
   if (!f) return '—'
   return new Date(f).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })
+}
+
+function tiempoRelativo(ts: string) {
+  const diff = Date.now() - new Date(ts).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 60) return `hace ${min}m`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `hace ${h}h`
+  return `hace ${Math.floor(h / 24)}d`
+}
+
+function exportarCSV(licitaciones: Licitacion[]) {
+  const headers = ['Código', 'Nombre', 'Organismo', 'Región', 'Tipo', 'Semáforo', 'Fecha Cierre', 'Monto', 'Moneda', 'Estado CRM', 'Notas']
+  const rows = licitaciones.map(l => [
+    l.codigo,
+    l.nombre,
+    l.organismo,
+    l.region,
+    l.tipo,
+    l.semaforo,
+    l.fecha_cierre ?? '',
+    l.monto_estimado ?? '',
+    l.moneda ?? 'CLP',
+    l.seguimiento?.estado_crm ?? '',
+    l.seguimiento?.notas ?? '',
+  ])
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `reasy-licitaciones-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 function formatUltimaSync(ts: string | null) {
@@ -37,6 +84,7 @@ export function DashboardClient({ userName }: Props) {
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const [selected, setSelected] = useState<Licitacion | null>(null)
+  const [actividad, setActividad] = useState<ActividadEntry[]>([])
 
   // Filters
   const [filterSemaforo, setFilterSemaforo] = useState<SemaforoEstado | ''>('')
@@ -67,6 +115,8 @@ export function DashboardClient({ userName }: Props) {
     setLicitaciones(licData.data ?? [])
     setStats(statsData.data ?? null)
     setLoading(false)
+
+    fetch('/api/actividad').then(r => r.json()).then(d => setActividad(d.data ?? []))
   }, [filterSemaforo, filterRegion, filterTipo, filterCRM, router])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -261,6 +311,17 @@ export function DashboardClient({ userName }: Props) {
           <span className="ml-auto text-xs text-[oklch(0.60_0.008_240)]">
             {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
           </span>
+
+          <button
+            onClick={() => exportarCSV(filtered)}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[oklch(0.85_0.010_240)] bg-white text-xs font-medium text-[oklch(0.40_0.010_240)] hover:border-[oklch(0.70_0.010_240)] disabled:opacity-40 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Exportar CSV
+          </button>
         </div>
 
         {/* Table */}
@@ -329,6 +390,44 @@ export function DashboardClient({ userName }: Props) {
           )}
         </div>
       </main>
+
+        {/* Actividad reciente */}
+        {actividad.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs font-medium text-[oklch(0.50_0.008_240)] uppercase tracking-wide mb-3">
+              Actividad reciente del equipo
+            </p>
+            <div className="bg-white rounded-xl border border-[oklch(0.90_0.008_240)] divide-y divide-[oklch(0.93_0.006_240)]">
+              {actividad.slice(0, 8).map(entry => (
+                <div key={entry.id} className="flex items-start gap-3 px-4 py-3">
+                  <div className="w-6 h-6 rounded-full bg-[oklch(0.92_0.010_240)] flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-xs font-medium text-[oklch(0.45_0.010_240)]">
+                      {(entry.usuario ?? 'S')[0].toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[oklch(0.35_0.010_240)]">
+                      <span className="font-medium">{entry.usuario ?? 'Sistema'}</span>
+                      {entry.accion === 'estado_crm' ? (
+                        <> marcó como <span className={`font-medium ${CRM_CONFIG[entry.valor_nuevo as EstadoCRM]?.color ?? ''}`}>
+                          {CRM_CONFIG[entry.valor_nuevo as EstadoCRM]?.label ?? entry.valor_nuevo}
+                        </span></>
+                      ) : (
+                        <> actualizó las notas</>
+                      )}
+                    </p>
+                    <p className="text-xs text-[oklch(0.60_0.008_240)] truncate mt-0.5">
+                      {entry.licitaciones?.organismo ?? entry.licitacion_codigo}
+                    </p>
+                  </div>
+                  <span className="text-xs text-[oklch(0.65_0.008_240)] shrink-0">
+                    {tiempoRelativo(entry.created_at)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* Detail panel */}
       {selected && (

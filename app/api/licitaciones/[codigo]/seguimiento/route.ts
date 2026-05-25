@@ -15,6 +15,13 @@ export async function PUT(
 
   const db = supabaseAdmin()
 
+  // Estado anterior para el log
+  const { data: anterior } = await db
+    .from('seguimiento')
+    .select('estado_crm, notas')
+    .eq('licitacion_codigo', codigo)
+    .single()
+
   const { data, error } = await db
     .from('seguimiento')
     .upsert(
@@ -31,5 +38,30 @@ export async function PUT(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Registrar cambios en el log
+  const logs: object[] = []
+  if (body.estado_crm && body.estado_crm !== anterior?.estado_crm) {
+    logs.push({
+      licitacion_codigo: codigo,
+      usuario: session.name,
+      accion: 'estado_crm',
+      valor_anterior: anterior?.estado_crm ?? null,
+      valor_nuevo: body.estado_crm,
+    })
+  }
+  if (body.notas !== undefined && body.notas !== anterior?.notas) {
+    logs.push({
+      licitacion_codigo: codigo,
+      usuario: session.name,
+      accion: 'notas',
+      valor_anterior: anterior?.notas ?? null,
+      valor_nuevo: body.notas,
+    })
+  }
+  if (logs.length > 0) {
+    await db.from('seguimiento_log').insert(logs)
+  }
+
   return NextResponse.json({ data })
 }
