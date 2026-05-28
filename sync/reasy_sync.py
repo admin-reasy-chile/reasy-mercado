@@ -289,22 +289,89 @@ def supabase_upsert(tabla: str, registros: list) -> int:
     return total
 
 
-def obtener_codigos_existentes(codigos: list) -> set:
-    """Retorna los codigos que ya existen en Supabase."""
-    existentes = set()
+def enviar_resumen_semanal(keywords: list, total_activas: int, urgentes: int):
+    """Envía resumen semanal los lunes cuando no hay licitaciones nuevas."""
+    if not RESEND_KEY:
+        return
+
+    kw_html = "".join(
+        f'<span style="display:inline-block;margin:3px;padding:4px 10px;background:#EDF2F4;border:1px solid #D9E1E5;border-radius:6px;font-size:12px;color:#0A2233;font-family:monospace;">{kw}</span>'
+        for kw in keywords
+    )
+
+    html = f"""
+    <div style="font-family:Inter,system-ui,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+      <div style="background:#0A2233;padding:24px 32px;">
+        <p style="color:#55B1BF;font-size:11px;margin:0 0 6px;letter-spacing:0.05em;text-transform:uppercase;">IA REASY · Resumen Semanal</p>
+        <h1 style="color:#fff;font-size:20px;margin:0;font-weight:600;">Sin licitaciones nuevas esta semana</h1>
+        <p style="color:#94a3b8;margin:6px 0 0;font-size:13px;">
+          Semana del {datetime.date.today().strftime('%-d de %B de %Y')}
+        </p>
+      </div>
+      <div style="padding:24px 32px;">
+        <div style="display:flex;gap:16px;margin-bottom:24px;">
+          <div style="flex:1;background:#EDF2F4;border-radius:10px;padding:16px;text-align:center;">
+            <p style="font-size:28px;font-weight:700;color:#0A2233;margin:0;">{total_activas}</p>
+            <p style="font-size:12px;color:#6b7280;margin:4px 0 0;">licitaciones activas</p>
+          </div>
+          <div style="flex:1;background:#fef2f2;border-radius:10px;padding:16px;text-align:center;">
+            <p style="font-size:28px;font-weight:700;color:#b91c1c;margin:0;">{urgentes}</p>
+            <p style="font-size:12px;color:#6b7280;margin:4px 0 0;">urgentes (≤5 días)</p>
+          </div>
+        </div>
+        <p style="font-size:13px;color:#374151;margin:0 0 12px;">
+          Las siguientes <strong>{len(keywords)} palabras clave</strong> están activas en el sistema.
+          Si llevan varios días sin resultados, considera agregar nuevas variantes.
+        </p>
+        <div style="margin-bottom:24px;">{kw_html}</div>
+        <div style="text-align:center;">
+          <a href="https://reasy-mercado.vercel.app/dashboard/keywords"
+             style="background:#55B1BF;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;">
+            Gestionar keywords →
+          </a>
+        </div>
+      </div>
+      <div style="padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
+        <p style="color:#9ca3af;font-size:11px;margin:0;">IA REASY · Sistema de Oportunidades Mercado Público</p>
+      </div>
+    </div>"""
+
+    try:
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+            json={
+                "from": "IA REASY <IA@reasy.cl>",
+                "to": USUARIOS_EMAIL,
+                "subject": f"📋 Resumen semanal REASY — {total_activas} activas, sin novedades esta semana",
+                "html": html,
+            },
+            timeout=15
+        )
+        if resp.ok:
+            print(f"📧 Resumen semanal enviado a {len(USUARIOS_EMAIL)} usuarios")
+        else:
+            print(f"  ⚠ Email error: {resp.text[:100]}")
+    except Exception as e:
+        print(f"  ⚠ Email error: {e}")
+
+
+def obtener_nuevas_hoy() -> list:
+    """Retorna licitaciones publicadas insertadas hoy por primera vez (via primera_vez_vista)."""
+    hoy = datetime.date.today().isoformat()
     headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
-    for i in range(0, len(codigos), 100):
-        batch = codigos[i:i + 100]
-        in_val = ','.join(batch)
-        url = f"{SUPABASE_URL}/rest/v1/licitaciones?select=codigo&codigo=in.({in_val})"
-        try:
-            resp = requests.get(url, headers=headers, timeout=15)
-            if resp.ok:
-                for r in resp.json():
-                    existentes.add(r['codigo'])
-        except Exception:
-            pass
-    return existentes
+    url = (
+        f"{SUPABASE_URL}/rest/v1/licitaciones"
+        f"?select=*&primera_vez_vista=eq.{hoy}&estado=eq.publicada&order=score.desc.nullslast"
+    )
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.ok:
+            return resp.json()
+        print(f"  ⚠ Supabase nuevas error {resp.status_code}: {resp.text[:100]}")
+    except Exception as e:
+        print(f"  ⚠ Error obteniendo nuevas hoy: {e}")
+    return []
 
 
 def enviar_email_nuevas(nuevas: list):
@@ -454,25 +521,26 @@ def main():
     print(f"\n⚙  Procesando {len(raw)} licitaciones REAS...")
     licitaciones = procesar(raw)
 
-    # Detectar cuáles son nuevas (no estaban en la DB)
-    codigos_actuales = [l["codigo"] for l in licitaciones]
-    codigos_existentes = obtener_codigos_existentes(codigos_actuales)
-    licitaciones_nuevas = [l for l in licitaciones if l["codigo"] not in codigos_existentes]
-
     print("💾 Guardando en Supabase...")
     total = supabase_upsert("licitaciones", licitaciones)
     print(f"✅ {total} registros guardados")
 
-    activas  = [l for l in licitaciones if l["estado"] == "publicada"]
-    nuevas   = [l for l in licitaciones_nuevas if l["estado"] == "publicada"]
+    activas = [l for l in licitaciones if l["estado"] == "publicada"]
     supabase_log(total=len(licitaciones), modo=modo)
+
+    # Detectar nuevas via primera_vez_vista (más confiable que comparar antes del upsert)
+    nuevas = obtener_nuevas_hoy()
 
     print(f"\n📊 Total REAS: {len(licitaciones)} | Activas: {len(activas)} | 🆕 Nuevas hoy: {len(nuevas)}")
 
     if nuevas:
         enviar_email_nuevas(nuevas)
     else:
-        print("📧 Sin licitaciones nuevas hoy — no se envía email")
+        print("📧 Sin licitaciones nuevas hoy")
+        if datetime.date.today().weekday() == 0:  # Lunes
+            palabras_clave_activas = obtener_keywords()
+            urgentes_hoy = len([l for l in activas if l.get("semaforo") == "urgente"])
+            enviar_resumen_semanal(palabras_clave_activas, len(activas), urgentes_hoy)
     print("=" * 55)
 
 

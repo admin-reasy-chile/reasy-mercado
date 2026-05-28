@@ -1,16 +1,12 @@
 name: Sync Diario — Mercado Público
 
 on:
-  # Cron: 9:00 AM hora Chile (UTC-3 en invierno, UTC-4 en verano)
-  # Usamos 12:00 UTC para cubrir ambos horarios con margen.
-  schedule:
-    - cron: '0 12 * * *'
-
-  # Permite disparo manual desde GitHub o via webhook desde el dashboard
+  # Disparado por cron-job.org vía /api/sync (Bearer CRON_SECRET)
+  # El schedule de GitHub Actions está desactivado para evitar doble ejecución.
   repository_dispatch:
     types: [manual-sync]
 
-  # Permite ejecutar desde la UI de GitHub Actions
+  # Permite ejecutar manualmente desde la UI de GitHub Actions
   workflow_dispatch:
 
 jobs:
